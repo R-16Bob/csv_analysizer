@@ -1,4 +1,5 @@
 import json
+import os
 from langchain_openai import ChatOpenAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
@@ -26,13 +27,23 @@ PROMPT_TEMPLATE = """
 
 请将所有输出作为JSON字符串返回。请注意要将"columns"列表和数据列表中的所有字符串都用双引号包围。
 例如：{"columns": ["Products", "Orders"], "data": [["32085Lip", 245], ["76439Eye", 178]]}
-(注意Action只包含工具的名字）
+(注意不要生成Observation，每次只需要生成Action和Action Input，待工具返回结果再生成Final Answer；其中Action只包含工具的名字，Action Input只包含一行代码，直到能够给出Final Answer）
 你要处理的用户请求如下： 
 """
 
-def dataframe_agent(df,query):
-    model = ChatOpenAI(model="gpt-4o-mini", base_url="https://api.aigc369.com/v1",
-                       temperature=0)
+def dataframe_agent(df,query,model="gpt-4o-mini"):
+    if model=="gpt-4o-mini":
+        model = ChatOpenAI(model="gpt-4o-mini", base_url="https://api.aigc369.com/v1",
+                           temperature=0)
+    elif model=="glm-4.5":
+        model= ChatOpenAI(
+            model="glm-4.5",
+            openai_api_key=os.getenv("ZAI_API_KEY"),
+            openai_api_base="https://open.bigmodel.cn/api/paas/v4/",
+            temperature=0
+        )
+    else:
+        return None
     agent = create_pandas_dataframe_agent(llm=model, df=df,allow_dangerous_code=True,verbose=True)
                                   # agent_executor_kwargs={"handle_parsing_errors":True, "verbose":True})
 

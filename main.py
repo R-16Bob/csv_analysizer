@@ -13,7 +13,8 @@ def create_chart(input_data,chart_type):
         st.line_chart(df_data)
     elif chart_type == "scatter":
         st.scatter_chart(df_data)
-
+# 添加模型选择下拉框
+model_choice = st.selectbox("请选择模型", ["gpt-4o-mini", "glm-4.5"])
 data = st.file_uploader("请上传你的CSV文件：",type=["csv"])
 
 if data:
@@ -26,7 +27,7 @@ if button and 'df' not in st.session_state:
     st.info("请先上传数据文件")
 elif button and 'df' in st.session_state:
     with st.spinner("AI正在思考中..."):
-        response_dict = dataframe_agent(st.session_state['df'],query)
+        response_dict = dataframe_agent(st.session_state['df'],query, model=model_choice)
         if "answer" in response_dict:
             st.write(response_dict["answer"])
         elif "table" in response_dict:
